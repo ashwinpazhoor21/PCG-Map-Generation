@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perlin Noise - Dynamic Rendering</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            background: linear-gradient(135deg, #1e1e1e, #333);
+            font-family: 'VT323', monospace;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        canvas {
+            width: 1024px;
+            height: 768px;
+            border: 2px solid #4CAF50;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.7);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+
+    <script src="perlin.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <h1>Click to Toggle Noise Type</h1>
+        <canvas></canvas>
+    </div>
+
+    <script>
+        var canvas = document.querySelector('canvas');
+        var ctx = canvas.getContext('2d');
+        canvas.width = 1024;
+        canvas.height = 768;
+
+        var image = ctx.createImageData(canvas.width, canvas.height);
+        var data = image.data;
+        var height = 0;
+        var fn = 'simplex';
+
+        function drawFrame() {
+            var cWidth = canvas.width, cHeight = canvas.height;
+            var noisefn = fn === 'simplex' ? noise.simplex3 : noise.perlin3;
+
+            for (var x = 0; x < cWidth; x++) {
+                for (var y = 0; y < cHeight; y++) {
+                    var value = noisefn(x / 50, y / 50, height);
+                    value = (1 + value) * 128;
+
+                    var cell = (x + y * cWidth) * 4;
+                    data[cell] = data[cell + 1] = data[cell + 2] = value;
+                    data[cell + 3] = 255;
+                }
+            }
+
+            ctx.putImageData(image, 0, 0);
+            height += 0.05;
+            requestAnimationFrame(drawFrame);
+        }
+
+        document.onclick = function() {
+            fn = fn === 'simplex' ? 'perlin' : 'simplex';
+        };
+
+        requestAnimationFrame(drawFrame);
+    </script>
+</body>
+</html>
